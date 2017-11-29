@@ -16,44 +16,45 @@ class App extends Component {
   }
 
   componentWillMount() {
-    let currentState = this.state;
 
-    BooksAPI.getAll().then((books) => {
-      books.forEach((book) => {
-        let currentShelf = book.shelf;
-        currentState[currentShelf] = currentState[currentShelf].concat(book);
-        currentState.allBooks[book.id] = book;
+    this.setState((prevState) => {
+      BooksAPI.getAll().then((books) => {
+        books.forEach((book) => {
+          let currentShelf = book.shelf;
+          prevState[currentShelf] = prevState[currentShelf].concat(book);
+          prevState.allBooks[book.id] = book;
+        });
+        this.setState(prevState);
       });
-    })
-    .then( () => {
-      this.setState(currentState);
     });
+
   }
 
   changeShelf = (bookId, currentShelf, newShelf) => {
-    let currentState = this.state;
-    let oldShelf = currentState[currentShelf];
-    let nextShelf = currentState[newShelf];
 
-    //Change Shelf Locally for optimal user experience
-    oldShelf.forEach((currentBook, index) => {
-      if(currentBook.id === bookId) {
-        currentBook.shelf = newShelf;
-        oldShelf.splice(index, 1);
-        nextShelf.push(currentBook);
-        return;
-      }
-    });
+    this.setState((currentState) => {
+      let oldShelf = currentState[currentShelf];
+      let nextShelf = currentState[newShelf];
 
-    this.setState(currentState);
+      BooksAPI.get(bookId).then((book) => {
+        BooksAPI.update(book, newShelf);
+      })
+      .then(() => {
+        oldShelf.forEach((currentBook, index) => {
+          if(currentBook.id === bookId) {
+            currentBook.shelf = newShelf;
+            oldShelf.splice(index, 1);
+            nextShelf.push(currentBook);
+            return;
+          }
+        });
 
-    //Change Shelf on API for future use
-    BooksAPI.get(bookId).then((book) => {
-      BooksAPI.update(book, newShelf);
-    }).catch((error) => {
-      console.error('Bad API, \n', error)
-    });
-
+        this.setState(currentState);
+      })
+      .catch((error) => {
+        console.error('Bad API, \n', error)
+      });
+    })
   }
 
 
