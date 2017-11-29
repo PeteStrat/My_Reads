@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+// import { Redirect } from 'react-router';
 import * as BooksAPI from './BooksAPI';
 import BookShelf from './BookShelf';
 
@@ -28,16 +29,24 @@ class SearchBooks extends Component {
     this.searchAPI(trimmedQuery);
   }
 
+  clearBooks = () => {
+    this.setState({unsortedBooks: []});
+  }
+
   searchAPI = (query) => {
+
     if(query.length < 1) {
-      this.setState( { unsortedBooks: [] } );
+      this.clearBooks();
       return;
     }
 
     BooksAPI.search(query, 5).then((results) => {
+      if(results.error) {
+        this.clearBooks();
+        return;
+      }
+
       this.setState({unsortedBooks: results});
-    }).catch((error) => {
-      console.error('Error in API call \n, ', error);
     });
   }
 
