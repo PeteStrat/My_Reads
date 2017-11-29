@@ -16,18 +16,18 @@ class App extends Component {
   }
 
   componentWillMount() {
-    let currentState = this.state;
 
-    BooksAPI.getAll().then((books) => {
-      books.forEach((book) => {
-        let currentShelf = book.shelf;
-        currentState[currentShelf] = currentState[currentShelf].concat(book);
-        currentState.allBooks[book.id] = book;
+    this.setState((prevState) => {
+      BooksAPI.getAll().then((books) => {
+        books.forEach((book) => {
+          let currentShelf = book.shelf;
+          prevState[currentShelf] = prevState[currentShelf].concat(book);
+          prevState.allBooks[book.id] = book;
+        });
+        this.setState(prevState);
       });
-    })
-    .then( () => {
-      this.setState(currentState);
     });
+
   }
 
   changeShelf = (bookId, currentShelf, newShelf) => {
